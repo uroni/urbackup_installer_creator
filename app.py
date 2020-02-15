@@ -73,7 +73,7 @@ def create_installer():
     out_name = "UrBackupClientInstaller.exe"
 
     if linux == "1":
-        out_name = "urbackup_client_installer.sh"
+        out_name = "urbackup_client_installer"
 
     workdir = uuid.uuid4().hex
 
@@ -90,7 +90,7 @@ def create_installer():
     go_os = "windows"
     go_arch = "386"
     go_arm = "6"
-    
+
     if sel_os=="win64":
         go_os = "windows"
         go_arch = "amd64"
