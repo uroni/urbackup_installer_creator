@@ -1,12 +1,33 @@
 from flask import Flask
 from flask import render_template, request
+from logging.handlers import RotatingFileHandler
+import logging
 import flask
-import requests
+import uuid
+import threading
 import json
-from requests.auth import HTTPBasicAuth
-import io
+import os
+import subprocess
+import shutil
+import time
+from io import BytesIO
+import binascii
 
 app = Flask(__name__)
+
+
+if not app.debug:
+    file_handler = RotatingFileHandler("/var/log/app/app.log",
+                    "a", 100*1024*1024, 10)
+
+    file_handler.setLevel(logging.DEBUG)
+    file_handler.setFormatter(logging.Formatter(
+                    '%(asctime)s %(levelname)s: %(message)s '
+                    '[in %(pathname)s:%(lineno)d]'
+                ))
+
+    app.logger.addHandler(file_handler)
+    app.logger.setLevel(logging.DEBUG)
 
 
 @app.route("/")
@@ -19,6 +40,8 @@ def home():
 @app.route("/create_installer", methods=["POST"])
 def create_installer():
     data = request.form["data"]
+
+    app.logger.info("Building installer. Options="+data)
 
     data = json.loads(data)
 
@@ -86,10 +109,17 @@ def create_installer():
             go_os = "linux"
             go_arch = "arm64"
 
-    env = {"GOARCH": go_arch, "GOOS": go_os, "GOARM": go_arm}
+    env = {"GOARCH": go_arch, "GOOS": go_os, "GOARM": go_arm, "PATH": os.getenv("PATH"), "HOME": os.getenv("HOME")}
 
-    output = subprocess.check_output(["go",
-        "build", "-o", os.path.join(workdir, out_name), '-ldflags="-s -w"', stderr=subprocess.STDOUT, cwd=workdir)
+    try:
+        app.logger.info("run-start")
+        output = subprocess.check_output(["go",
+            "build", "-o", out_name, '-ldflags=-s -w'], stderr=subprocess.STDOUT, cwd=workdir, env=env)
+    except subprocess.CalledProcessError as e:
+        app.logger.error("err")
+        app.logger.error(e)
+        app.logger.error('error>' + e.output.decode()+  '<')
+        raise
 	
     output = subprocess.check_output(["upx", os.path.join(workdir, out_name)], stderr=subprocess.STDOUT)
 
@@ -99,4 +129,4 @@ def create_installer():
 
     outf.seek(0)
 
-    return flask.send_file(outf, attachment_filename=out_name)
+    return flask.send_file(outf, as_attachment=True, attachment_filename=out_name)

@@ -9,4 +9,6 @@ set -e
 
 cd /home/app
 
-python3 run.py
+
+export PATH="/usr/local/go/bin:$PATH"
+nice -n 19 python3 run.py
