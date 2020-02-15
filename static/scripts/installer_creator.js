@@ -9,7 +9,8 @@ function submit_form()
         "clientname_prefix": $("#clientname_prefix").val(),
         "notray" : $("#notray").prop("checked") ? 1 : 0,
         "group_name": $("#group_name").val(),
-        "sel_os": $("#sel_os").val()
+        "sel_os": $("#sel_os").val(),
+        "retry": $("#retry").pop("checked") ? 1 : 0
     };
 
     $("#data").val(JSON.stringify(data));

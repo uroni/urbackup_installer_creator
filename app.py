@@ -54,6 +54,7 @@ def create_installer():
     clientname_prefix = data["clientname_prefix"] if "clientname_prefix" in data else ""
     notray = "1" if "notray" in data and data["notray"]==1 else "0"
     linux = "1" if "linux" in data and data["linux"]==1 else "0"
+    retry = "1" if "retry" in data and data["retry"]==1 else "0"
 
     installer_go = render_template(
         'main.go',

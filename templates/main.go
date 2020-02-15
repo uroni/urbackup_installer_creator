@@ -2,6 +2,7 @@
 package main
 
 import (
+	"bufio"
 	"crypto/md5"
 	"crypto/rand"
 	"crypto/sha256"
@@ -18,6 +19,7 @@ import (
 	"path"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/cheggaaa/pb/v3"
 	"golang.org/x/crypto/pbkdf2"
@@ -441,9 +443,31 @@ func do_download() error {
 }
 
 func main() {
-	err := do_download()
-
-	if err != nil {
-		fmt.Println(err)
+	var retry = false
+	if "{{ retry }}" == "1" {
+		retry = true
 	}
+
+	var do_retry = true
+	for do_retry {
+		do_retry = false
+
+		err := do_download()
+
+		if err != nil {
+			fmt.Println(err)
+
+			if !retry {
+				fmt.Print("Press 'Enter' to continue...")
+				bufio.NewReader(os.Stdin).ReadBytes('\n')
+			}
+		}
+
+		if retry {
+			fmt.Println("Retrying in 30s...")
+			do_retry = true
+			time.Sleep(30 * time.Second)
+		}
+	}
+
 }
