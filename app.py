@@ -67,7 +67,8 @@ def create_installer():
         clientname_prefix=clientname_prefix,
         notray=notray,
         group_name=binascii.hexlify(data["group_name"].encode()).decode(),
-        linux=linux
+        linux=linux,
+        retry=retry
     )
 
     out_name = "UrBackupClientInstaller.exe"
