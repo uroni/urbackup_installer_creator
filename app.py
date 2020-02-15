@@ -50,10 +50,11 @@ def create_installer():
     if "silent" in data and data["silent"]==1:
         silent="1"
 	
+    sel_os = data["sel_os"] if "sel_os" in data else "win32"
     append_rnd = "1" if "append_rnd" in data and data["append_rnd"]==1 else "0"
     clientname_prefix = data["clientname_prefix"] if "clientname_prefix" in data else ""
     notray = "1" if "notray" in data and data["notray"]==1 else "0"
-    linux = "1" if "linux" in data and data["linux"]==1 else "0"
+    linux = "1" if "lin" in sel_os else "0"
     retry = "1" if "retry" in data and data["retry"]==1 else "0"
 
     installer_go = render_template(
@@ -89,26 +90,23 @@ def create_installer():
     go_os = "windows"
     go_arch = "386"
     go_arm = "6"
-
-    if "sel_os" in data:
-        sel_os = data["sel_os"]
-
-        if sel_os=="win64":
-            go_os = "windows"
-            go_arch = "amd64"
-        elif sel_os == "lin32":
-            go_os = "linux"
-            go_arch = "386"
-        elif sel_os == "lin64":
-            go_os = "linux"
-            go_arch = "amd64"
-        elif sel_os == "linarm32":
-            go_os = "linux"
-            go_arch = "arm"
-            go_arm = "6"
-        elif sel_os == "linarm64":
-            go_os = "linux"
-            go_arch = "arm64"
+    
+    if sel_os=="win64":
+        go_os = "windows"
+        go_arch = "amd64"
+    elif sel_os == "lin32":
+        go_os = "linux"
+        go_arch = "386"
+    elif sel_os == "lin64":
+        go_os = "linux"
+        go_arch = "amd64"
+    elif sel_os == "linarm32":
+        go_os = "linux"
+        go_arch = "arm"
+        go_arm = "6"
+    elif sel_os == "linarm64":
+        go_os = "linux"
+        go_arch = "arm64"
 
     env = {"GOARCH": go_arch, "GOOS": go_os, "GOARM": go_arm, "PATH": os.getenv("PATH"), "HOME": os.getenv("HOME")}
 
