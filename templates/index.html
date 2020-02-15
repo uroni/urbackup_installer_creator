@@ -1,0 +1,66 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<div class="container">
+    <br><br><br>
+<form id="form1" action="create_installer" method="post" onsubmit="submit_form(); return true">
+    <div class="form-group">
+    <label for="serverurl">Server URL (with x appended):</label>
+    <input class="form-control" type="text" name="serverurl" id="serverurl" value="http://127.0.0.1:55414/x">
+</div>
+<div class="form-group">
+    <label for="serverurl">Server login username. Needs following permissions:</label>
+    <code><pre>
+   "status": "some"
+   "add_client": "all"
+ Optionally, to be able to install existing clients (but this also allows the user to access any authentication code of every client, so use with care;
+  preferably enable the random value appending below such that only new clients can be installed):
+   "settings": "all"
+</pre></code>
+    <input class="form-control" type="text" name="username" id="username" value="admin" >
+</div>
+<div class="form-group">
+    <label for="serverurl">Server login password (be aware that the password is packaged in plain text into the installer):</label>
+    <input class="form-control" type="text" name="password" id="password" value="passw0rd" >
+</div>
+        <div class="form-check">   
+                <input class="form-check-input" type="checkbox" name="silent" id="silent">
+            <label for="silent" class="form-check-label" >Silent installation of client (without asking questions and without showing installation progress)</label>
+        </div>
+            <div class="form-check">         
+            <input class="form-check-input" type="checkbox" name="append_rnd" id="append_rnd" checked="checked">
+            <label for="append_rnd" class="form-check-label" >Append random value to client name</label>            
+            </div>
+            <div class="form-check">         
+                    <input class="form-check-input" type="checkbox" name="notray" id="notray">
+                    <label for="notray" class="form-check-label" >Install without tray icon and without user interaction</label>            
+            </div>
+        <div class="form-group">
+                <label for="clientname_prefix">Clientname prefix:</label>
+                <input class="form-control" type="text" name="clientname_prefix" id="clientname_prefix" value="" >
+            </div>
+            <div class="form-group">
+                <label for="group_name">Create client in settings group name (leave empty for default, works with UrBackup server > 2.4.x):</label>
+                <input class="form-control" type="text" name="group_name" id="group_name" value="" >
+            </div>
+            <div class="form-group">
+                <label for="sel_os">Select operating system:</label>
+                <select class="form-control" id="sel_os">
+                  <option value="win32">Windows (x86)</option>
+                  <option value="win64">Windows (x86-64)</option>
+                  <option value="lin32">Linux (x86)</option>
+                  <option value="lin63">Linux (x86-64)</option>
+                  <option value="linarm32">Linux ARMv6</option>
+                  <option value="linarm64">Linux ARM64</option>
+                </select>
+              </div> 
+            
+    <input class="form-control" type="hidden" name="data" id="data" value="" >
+    <div class="form-group">
+    <input type="submit" class="form-control" value="Create & download installer">
+    </div>
+</form>
+</div>
+
+{% endblock %}
