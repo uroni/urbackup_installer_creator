@@ -242,12 +242,13 @@ func download_client(server_settings ServerSettings, sr *SaltResp, clientid int,
 	defer resp.Body.Close()
 
 	var limit int64
-	limit = 30 * 1024 * 1024
+	limit = 35 * 1024 * 1024
 	if os_linux {
 		limit = 25 * 1024 * 1024
 	}
 
 	bar := pb.Full.Start64(limit)
+	defer bar.Finish()
 
 	barReader := bar.NewProxyReader(resp.Body)
 
@@ -424,9 +425,9 @@ func do_download() error {
 	var cmd *exec.Cmd
 
 	if linux {
-		cmd = exec.Command("C:\\Windows\\system32\\cmd.exe", "/c", file_fn, inst_param)
-	} else {
 		cmd = exec.Command("/bin/sh", file_fn, inst_param)
+	} else {
+		cmd = exec.Command("C:\\Windows\\system32\\cmd.exe", "/c", file_fn, inst_param)
 	}
 
 	err = cmd.Start()
