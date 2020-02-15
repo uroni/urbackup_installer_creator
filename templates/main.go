@@ -9,8 +9,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/cheggaaa/pb/v3"
-	"golang.org/x/crypto/pbkdf2"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -20,6 +18,9 @@ import (
 	"path"
 	"strconv"
 	"strings"
+
+	"github.com/cheggaaa/pb/v3"
+	"golang.org/x/crypto/pbkdf2"
 )
 
 type ServerSettings struct {
@@ -238,7 +239,13 @@ func download_client(server_settings ServerSettings, sr *SaltResp, clientid int,
 
 	defer resp.Body.Close()
 
-	bar := pb.Full.Start64(40 * 1024 * 1024)
+	var limit int64
+	limit = 30 * 1024 * 1024
+	if os_linux {
+		limit = 25 * 1024 * 1024
+	}
+
+	bar := pb.Full.Start64(limit)
 
 	barReader := bar.NewProxyReader(resp.Body)
 
@@ -297,9 +304,9 @@ func do_download() error {
 	if "{{ silent }}" == "1" {
 		silent = true
 	}
-	var linux=false
+	var linux = false
 	if "{{ linux }}" == "1" {
-		linux=true
+		linux = true
 	}
 
 	var server_settings ServerSettings
@@ -339,14 +346,13 @@ func do_download() error {
 	var installer_name string
 	if linux {
 		installer_name = "UrBackup Client Installer.exe"
-	
+
 		if no_tray {
 			installer_name = "UrBackupUpdate.exe"
-		}	
+		}
 	} else {
 		installer_name = "urbackup_client_installer.sh"
 	}
-	
 
 	add_client_resp, err := add_client(server_settings, sr, clientname, group_name)
 
@@ -403,7 +409,7 @@ func do_download() error {
 
 	if silent {
 		if linux {
-			inst_param = " -- silent"	
+			inst_param = " -- silent"
 		} else {
 			inst_param = "/S"
 		}
@@ -414,13 +420,13 @@ func do_download() error {
 	}
 
 	var cmd *exec.Cmd
-	
+
 	if linux {
 		cmd = exec.Command("C:\\Windows\\system32\\cmd.exe", "/c", file_fn, inst_param)
 	} else {
 		cmd = exec.Command("/bin/sh", file_fn, inst_param)
-	}	
-	
+	}
+
 	err = cmd.Start()
 	if err != nil {
 		return err

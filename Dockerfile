@@ -4,7 +4,9 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get -y update &&\
      apt-get -y install python3 python3-pip sudo &&\
-     pip3 install virtualenvwrapper
+     pip3 install virtualenvwrapper golang &&\
+     go get "github.com/cheggaaa/pb/v3" &&\
+     go get "golang.org/x/crypto/pbkdf2"
 
 RUN useradd -ms /bin/bash app &&\
     echo "export WORKON_HOME=$HOME/.virtualenvs" >> /home/app/.bashrc &&\
