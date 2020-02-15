@@ -21,4 +21,5 @@ RUN ["sudo", "-u", "app", "/bin/bash", "-c", "export VIRTUALENVWRAPPER_PYTHON=py
     . /usr/local/bin/virtualenvwrapper.sh &&\
     mkvirtualenv --python=/usr/bin/python3 main -r ~/requirements.txt"]
 
+EXPOSE 5000
 CMD ["/usr/bin/sudo", "-u", "app", "/bin/bash", "/home/app/run.sh"]
