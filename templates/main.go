@@ -99,6 +99,9 @@ func get_salt(server_settings ServerSettings, username string) (sr *SaltResp, er
 	}
 
 	if sr.Error != 0 || len(sr.Salt) == 0 {
+		if sr.Error==0 {
+			return nil, errors.New("User not found on server") 
+		}
 		return nil, errors.New("Error getting salt")
 	}
 
