@@ -350,7 +350,7 @@ func do_download() error {
 	fmt.Println("Clientname:", clientname)
 
 	var installer_name string
-	if linux {
+	if !linux {
 		installer_name = "UrBackup Client Installer.exe"
 
 		if no_tray {
