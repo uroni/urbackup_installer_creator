@@ -64,7 +64,7 @@ def create_installer():
         password=binascii.hexlify(data["password"].encode()).decode(),
         silent=silent,
         append_rnd=append_rnd,
-        clientname_prefix=clientname_prefix,
+        clientname_prefix=binascii.hexlify(clientname_prefix.encode()).decode(),
         notray=notray,
         group_name=binascii.hexlify(data["group_name"].encode()).decode(),
         linux=linux,
