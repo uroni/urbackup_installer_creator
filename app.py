@@ -1,3 +1,4 @@
+#SPDX-License-Identifier: AGPL-3.0-or-later
 from flask import Flask
 from flask import render_template, request
 from logging.handlers import RotatingFileHandler
