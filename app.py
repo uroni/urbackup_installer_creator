@@ -92,10 +92,12 @@ def create_installer():
     go_os = "windows"
     go_arch = "386"
     go_arm = "6"
+    go_ldflags = '-ldflags=-s -w'
 
     if sel_os=="win64":
         go_os = "windows"
         go_arch = "amd64"
+        go_ldflags = ""
     elif sel_os == "lin32":
         go_os = "linux"
         go_arch = "386"
@@ -109,13 +111,15 @@ def create_installer():
     elif sel_os == "linarm64":
         go_os = "linux"
         go_arch = "arm64"
+    elif sel_os == "win32":
+        go_ldflags = ""
 
     env = {"GOARCH": go_arch, "GOOS": go_os, "GOARM": go_arm, "PATH": os.getenv("PATH"), "HOME": os.getenv("HOME")}
 
     try:
         app.logger.info("run-start")
         output = subprocess.check_output(["go",
-            "build", "-o", out_name, '-ldflags=-s -w'], stderr=subprocess.STDOUT, cwd=workdir, env=env)
+            "build", "-o", out_name, go_ldflags], stderr=subprocess.STDOUT, cwd=workdir, env=env)
     except subprocess.CalledProcessError as e:
         app.logger.error("err")
         app.logger.error(e)
