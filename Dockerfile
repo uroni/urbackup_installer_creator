@@ -1,6 +1,6 @@
 #SPDX-License-Identifier: AGPL-3.0-or-later
 
-FROM debian:stable
+FROM debian:trixie
 
 ENV DEBIAN_FRONTEND=noninteractive
 
