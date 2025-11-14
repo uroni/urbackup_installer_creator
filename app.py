@@ -139,7 +139,7 @@ def create_installer():
         app.logger.error('error>' + e.output.decode()+  '<')
         raise
 	
-    #output = subprocess.check_output(["upx", os.path.join(workdir, out_name)], stderr=subprocess.STDOUT)
+    output = subprocess.check_output(["upx", os.path.join(workdir, out_name)], stderr=subprocess.STDOUT)
 
     outf = BytesIO()
     with open(os.path.join(workdir, out_name), "rb") as f:
