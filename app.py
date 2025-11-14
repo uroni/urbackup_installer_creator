@@ -104,7 +104,6 @@ def create_installer():
     if sel_os=="win64":
         go_os = "windows"
         go_arch = "amd64"
-        go_ldflags = ""
     elif sel_os == "lin32":
         go_os = "linux"
         go_arch = "386"
@@ -118,8 +117,6 @@ def create_installer():
     elif sel_os == "linarm64":
         go_os = "linux"
         go_arch = "arm64"
-    elif sel_os == "win32":
-        go_ldflags = ""
 
     env = {"GOARCH": go_arch, "GOOS": go_os, "GOARM": go_arm, "PATH": os.getenv("PATH"), "HOME": os.getenv("HOME")}
 
