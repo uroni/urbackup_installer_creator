@@ -141,4 +141,4 @@ def create_installer():
 
     outf.seek(0)
 
-    return flask.send_file(outf, as_attachment=True, attachment_filename=out_name)
+    return flask.send_file(outf, as_attachment=True, download_name=out_name)
