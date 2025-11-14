@@ -59,6 +59,7 @@ def create_installer():
     linux = "1" if "lin" in sel_os else "0"
     retry = "1" if "retry" in data and data["retry"]==1 else "0"
     use_gui = True if "use_gui" in data and data["use_gui"]==1 else False
+    use_upx = True if "use_upx" in data and data["use_upx"]==1 else False
 
     if use_gui:
         silent = "0"
@@ -139,7 +140,8 @@ def create_installer():
         app.logger.error('error>' + e.output.decode()+  '<')
         raise
 	
-    output = subprocess.check_output(["upx", os.path.join(workdir, out_name)], stderr=subprocess.STDOUT)
+    if use_upx:
+        output = subprocess.check_output(["upx", os.path.join(workdir, out_name)], stderr=subprocess.STDOUT)
 
     outf = BytesIO()
     with open(os.path.join(workdir, out_name), "rb") as f:

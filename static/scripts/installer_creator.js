@@ -11,7 +11,8 @@ function submit_form()
         "group_name": $("#group_name").val(),
         "sel_os": $("#sel_os").val(),
         "retry": $("#retry").prop("checked") ? 1 : 0,
-        "use_gui": $("#use_gui").prop("checked") ? 1 : 0
+        "use_gui": $("#use_gui").prop("checked") ? 1 : 0,
+        "use_upx": $("#use_upx").prop("checked") ? 1 : 0,
     };
 
     $("#data").val(JSON.stringify(data));
