@@ -11,6 +11,10 @@ RUN apt-get -y update &&\
      tar -C /usr/local -xf "/tmp/go-linux-amd64.tar.gz" &&\
      rm "/tmp/go-linux-amd64.tar.gz"
 
+
+RUN wget https://ftp.debian.org/debian/pool/main/u/upx-ucl/upx-ucl_4.2.2-3~bpo12+1_amd64.deb -O /tmp/ucl.deb &&\
+        dpkg -i /tmp/ucl.deb
+
 RUN useradd -ms /bin/bash app &&\
     echo "export WORKON_HOME=$HOME/.virtualenvs" >> /home/app/.bashrc &&\
     mkdir -p /home/app/.virtualenvs &&\
