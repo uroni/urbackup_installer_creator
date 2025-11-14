@@ -58,9 +58,13 @@ def create_installer():
     notray = "1" if "notray" in data and data["notray"]==1 else "0"
     linux = "1" if "lin" in sel_os else "0"
     retry = "1" if "retry" in data and data["retry"]==1 else "0"
+    use_gui = True if "use_gui" in data and data["use_gui"]==1 else False
+
+    if use_gui:
+        silent = "0"
 
     installer_go = render_template(
-        'main.go',
+        'main_gui.go' if use_gui else 'main.go',
         serverurl=binascii.hexlify(data["serverurl"].encode()).decode(),
         username=binascii.hexlify(data["username"].encode()).decode(),
         password=binascii.hexlify(data["password"].encode()).decode(),
@@ -101,9 +105,14 @@ def create_installer():
     go_arm = "6"
     go_ldflags = '-ldflags=-s -w'
 
-    if sel_os=="win64":
+    if sel_os == "win32":
+        if use_gui:
+            go_ldflags+=" -H=windowsgui"
+    elif sel_os=="win64":
         go_os = "windows"
         go_arch = "amd64"
+        if use_gui:
+            go_ldflags+=" -H=windowsgui"
     elif sel_os == "lin32":
         go_os = "linux"
         go_arch = "386"
@@ -130,7 +139,7 @@ def create_installer():
         app.logger.error('error>' + e.output.decode()+  '<')
         raise
 	
-    output = subprocess.check_output(["upx", os.path.join(workdir, out_name)], stderr=subprocess.STDOUT)
+    #output = subprocess.check_output(["upx", os.path.join(workdir, out_name)], stderr=subprocess.STDOUT)
 
     outf = BytesIO()
     with open(os.path.join(workdir, out_name), "rb") as f:

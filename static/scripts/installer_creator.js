@@ -10,7 +10,8 @@ function submit_form()
         "notray" : $("#notray").prop("checked") ? 1 : 0,
         "group_name": $("#group_name").val(),
         "sel_os": $("#sel_os").val(),
-        "retry": $("#retry").prop("checked") ? 1 : 0
+        "retry": $("#retry").prop("checked") ? 1 : 0,
+        "use_gui": $("#use_gui").prop("checked") ? 1 : 0
     };
 
     $("#data").val(JSON.stringify(data));

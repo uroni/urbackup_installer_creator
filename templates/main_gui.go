@@ -2,7 +2,7 @@
 package main
 
 import (
-	"bufio"
+	"bytes"
 	"crypto/md5"
 	"crypto/rand"
 	"crypto/sha256"
@@ -21,7 +21,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cheggaaa/pb/v3"
+	"github.com/ncruces/zenity"
 	"golang.org/x/crypto/pbkdf2"
 )
 
@@ -85,7 +85,7 @@ type SaltResp struct {
 }
 
 func get_salt(server_settings ServerSettings, username string) (sr *SaltResp, err error) {
-	fmt.Println("Getting login information from server...")
+	setStatus("Getting login information from server...")
 
 	json_str, err := get_json(server_settings, "salt", url.Values{"username": {username}})
 
@@ -115,7 +115,7 @@ type LoginResp struct {
 
 func login(server_settings ServerSettings, username string, sr *SaltResp, password string) error {
 
-	fmt.Println("Logging into server...")
+	setStatus("Logging into server...")
 
 	password_md5_bin := md5.Sum([]byte(sr.Salt + password))
 	password_md5 := hex.EncodeToString(password_md5_bin[:])
@@ -214,7 +214,7 @@ func add_client(server_settings ServerSettings, sr *SaltResp, clientname string,
 
 func download_client(server_settings ServerSettings, sr *SaltResp, clientid int, authkey string, tmpdir string, installer_name string, os_linux bool) (file *os.File, err error) {
 
-	fmt.Println("Starting download of client id", clientid)
+	setStatus(fmt.Sprintf("Starting download of client id %d", clientid))
 
 	file, err = os.Create(path.Join(tmpdir, installer_name))
 
@@ -250,19 +250,41 @@ func download_client(server_settings ServerSettings, sr *SaltResp, clientid int,
 		limit = 25 * 1024 * 1024
 	}
 
-	bar := pb.Full.Start64(limit)
-	defer bar.Finish()
+	setStatus("Downloading installer...")
 
-	barReader := bar.NewProxyReader(resp.Body)
+	// Track progress
+	buf := make([]byte, 32*1024)
+	var downloaded int64 = 0
 
-	_, err = io.Copy(file, barReader)
+	for {
+		n, err := resp.Body.Read(buf)
+		if n > 0 {
+			_, writeErr := file.Write(buf[:n])
+			if writeErr != nil {
+				file.Close()
+				os.Remove(file_fn)
+				return nil, writeErr
+			}
+			downloaded += int64(n)
 
-	if err != nil {
-		file.Close()
-		os.Remove(file_fn)
-		return nil, err
+			// Update progress bar
+			percent := int(float64(downloaded) / float64(limit) * 100)
+			if percent > 100 {
+				percent = 100
+			}
+			setProgress(percent)
+		}
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			file.Close()
+			os.Remove(file_fn)
+			return nil, err
+		}
 	}
 
+	setStatus("Download complete!")
 	return file, nil
 }
 
@@ -290,6 +312,57 @@ func mod_notray() error {
 func unhex(hexstr string) string {
 	ret, _ := hex.DecodeString(hexstr)
 	return string(ret)
+}
+
+// GUI manager for displaying status in a persistent window
+type GUIManager struct {
+	progressDlg zenity.ProgressDialog
+}
+
+var guiManager *GUIManager
+
+func initGUI() error {
+	dlg, err := zenity.Progress(
+		zenity.Title("UrBackup Installer"),
+		zenity.Width(500),
+		zenity.NoCancel(),
+	)
+	if err != nil {
+		return err
+	}
+
+	guiManager = &GUIManager{
+		progressDlg: dlg,
+	}
+
+	return nil
+}
+
+func closeGUI() {
+	if guiManager != nil && guiManager.progressDlg != nil {
+		guiManager.progressDlg.Close()
+	}
+}
+
+func setStatus(message string) {
+	if guiManager == nil {
+		return
+	}
+	guiManager.progressDlg.Text(message)
+}
+
+func setProgress(percent int) {
+	if guiManager != nil && guiManager.progressDlg != nil {
+		guiManager.progressDlg.Value(percent)
+	}
+}
+
+func showError(message string) {
+	zenity.Error(message, zenity.Title("UrBackup Installer Error"), zenity.Width(400))
+}
+
+func showFinalMessage(message string) {
+	zenity.Info(message, zenity.Title("UrBackup Installer"), zenity.Width(400))
 }
 
 func do_download() error {
@@ -347,7 +420,7 @@ func do_download() error {
 		clientname = clientname + "-" + hex.EncodeToString(app)
 	}
 
-	fmt.Println("Clientname:", clientname)
+	setStatus(fmt.Sprintf("Clientname: %s", clientname))
 
 	var installer_name string
 	if !linux {
@@ -375,7 +448,7 @@ func do_download() error {
 	var file_fn string
 
 	if add_client_resp.Already_exists {
-		fmt.Println("Client already exists")
+		setStatus("Client already exists")
 		status, err := get_status(server_settings, sr)
 
 		if err != nil {
@@ -383,7 +456,7 @@ func do_download() error {
 		}
 
 		if len(status.Client_downloads) == 0 {
-			fmt.Println("Client already exists and login user has probably no right to access existing clients. Please contact your server administrator")
+			setStatus("Client already exists and login user has probably no right to access existing clients")
 			return nil
 		}
 
@@ -433,13 +506,16 @@ func do_download() error {
 		cmd = exec.Command(file_fn, inst_param)
 	}
 
-	err = cmd.Start()
-	if err != nil {
-		return err
-	}
+	var stdoutBuf, stderrBuf bytes.Buffer
+	cmd.Stdout = &stdoutBuf
+	cmd.Stderr = &stderrBuf
 
-	err = cmd.Wait()
-	if err != nil {
+	if err := cmd.Start(); err != nil {
+		output := stdoutBuf.String() + stderrBuf.String()
+		if len(output) > 4000 {
+			output = output[:4000] + "... (truncated)"
+		}
+		showError(fmt.Sprintf("Failed to start installer. Error: %v\nOutput:\n%s", err, output))
 		return err
 	}
 
@@ -452,6 +528,15 @@ func main() {
 		retry = true
 	}
 
+	// Initialize GUI
+	err := initGUI()
+	if err != nil {
+		// Fallback to error dialog if GUI init fails
+		showError(fmt.Sprintf("Failed to initialize GUI: %v", err))
+		return
+	}
+	defer closeGUI()
+
 	var do_retry = true
 	for do_retry {
 		do_retry = false
@@ -459,16 +544,18 @@ func main() {
 		err := do_download()
 
 		if err != nil {
-			fmt.Println(err)
+			setStatus(fmt.Sprintf("Error: %s", err.Error()))
 
 			if !retry {
-				fmt.Print("Press 'Enter' to continue...")
-				bufio.NewReader(os.Stdin).ReadBytes('\n')
+				showFinalMessage(fmt.Sprintf("Installation failed Status %s. Press OK to close.", err.Error()))
 			}
+		} else {
+			// Success message
+			setStatus("Installation completed successfully!")
 		}
 
-		if retry {
-			fmt.Println("Retrying in 30s...")
+		if retry && err != nil {
+			setStatus("Retrying in 30s...")
 			do_retry = true
 			time.Sleep(30 * time.Second)
 		}
