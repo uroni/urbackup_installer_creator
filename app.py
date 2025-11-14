@@ -1,4 +1,5 @@
 #SPDX-License-Identifier: AGPL-3.0-or-later
+from pathlib import Path
 from flask import Flask
 from flask import render_template, request
 from logging.handlers import RotatingFileHandler
@@ -85,6 +86,12 @@ def create_installer():
     def remove_workdir(response):
         shutil.rmtree(workdir)
         return response
+    
+    mod_file = Path("templates/go.mod")
+    shutil.copy(mod_file, os.path.join(workdir, "go.mod"))
+
+    sum_file = Path("templates/go.sum")
+    shutil.copy(sum_file, os.path.join(workdir, "go.sum"))
 
     with open(workdir+"/main.go", "wt") as f:
         f.write(installer_go)
