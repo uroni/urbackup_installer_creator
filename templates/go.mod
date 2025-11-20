@@ -1,11 +1,11 @@
 module github.com/uroni/urbackup_installer_creator
 
-go 1.21
+go 1.24.0
 
 require (
 	github.com/cheggaaa/pb/v3 v3.1.5
 	github.com/ncruces/zenity v0.10.12
-	golang.org/x/crypto v0.17.0
+	golang.org/x/crypto v0.45.0
 )
 
 require (
@@ -20,5 +20,5 @@ require (
 	github.com/randall77/makefat v0.0.0-20210315173500-7ddd0e42c844 // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect
 	golang.org/x/image v0.15.0 // indirect
-	golang.org/x/sys v0.17.0 // indirect
+	golang.org/x/sys v0.38.0 // indirect
 )
